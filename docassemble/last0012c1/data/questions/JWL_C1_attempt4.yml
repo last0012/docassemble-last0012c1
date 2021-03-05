@@ -1,0 +1,153 @@
+---
+objects:
+  - endpoint: DADict
+---
+# WELCOME SCREEN
+mandatory: True
+question: Form 1 Assistance
+subquestion: |
+  
+  This application is intended to assist in filling out your Form 1.
+
+  **Disclaimer:**
+  **The assistance this application provides is not a substitute for legal advice. Before filing your Form 1, it must be reviewed by your lawyer.**
+
+  Selecting "continue" means you accept and understand the above disclaimer.
+
+buttons:
+  - I don't want to continue: exit
+    url: http://www.courts.sa.gov.au
+  - I want to continue and accept: continue
+---
+# COURT SELECTION
+mandatory: true
+question: |
+  Which Court are you filing your Form 1 in?
+field: court_selection
+choices:
+  - Federal Court
+  - Federal Circuit Court
+  - Supreme
+  - District
+  - Magistrates
+---
+question: What is your name?
+subquestion: |
+  Please enter your full name.
+fields:
+  - no label: user_name
+---
+question: What the name of the Applicant?
+subquestion: |
+  Please enter the full name of the Applicant name.
+fields:
+  - no label: app_name
+---
+question: What is the name of the Respondent?
+subquestion: |
+  Please enter the full name of the Respondent in this matter.
+fields:
+  - no label: res_name
+---
+question: Lawyer details
+subquestion: |
+  Please enter the following details of your lawyer and their firm.
+fields:
+  - Their full name: lawyer_name
+  - Firm: lawyer_firm
+  - Telephone number: lawyer_phone
+    datatype: integer
+  - Email address: lawyer_email
+  - Address of their firm '(include state and postcode)': lawyer_address
+---
+question: |
+  Are you the Applicant or Respondent?
+field: app_res
+choices:
+  - Applicant
+  - Respondent
+---
+question: |
+  In which state did your matter originate?
+field: matter_state
+choices:
+  - South Australia
+  - Victoria
+  - New South Wales
+  - Tasmania
+  - Queensland
+  - Northern Territory
+  - ACT
+  - Western Australia
+---
+question: |
+  What area is your matter best described as?
+field: matter_type
+choices:
+  - Corporations
+  - Criminal
+  - Employment
+  - General
+  - Queensland
+---
+question: |
+  What date will you be filing your document?
+subquestion: |
+  Form 1s with invalid dates are not processed by the Registry
+fields:
+  - Day: sub_day
+    datatype: integer
+  - Month: sub_month
+  - year: sub_year
+    datatype: integer
+---
+# ELIGIBILITY CRITERIA
+mandatory: True
+code: |
+ if court_selection == 'Federal Court' or court_selection == 'Federal Circuit Court':
+   endpoint['eligible']
+ else:
+   endpoint['ineligible']
+---
+# ELIGIBLE ENDPOINT
+event: endpoint['eligible']
+question: Download your completed Form 1 below
+subquestion: |
+  Check your answers in the table below before having your lawyer review the document for filing.
+ 
+  Here is the information you supplied to us:
+ 
+  Information|Your response
+  ---|---
+  Applicant name | ${ app_name }
+  Respondent name | ${ res_name }
+  Name of lawyer | ${ lawyer_name }
+  Filed of behalf of | ${ app_res }
+  State matter originated in | ${ matter_state }
+  Matter type | ${ matter_type }
+  Date | ${ sub_day } ${ sub_month } ${ sub_year }
+
+  See below for downloadable PDF file. You may also choose to email a copy to yourself or you lawyer.
+
+attachment:
+  valid formats:
+   - pdf
+  docx template file: f3.docx
+
+buttons:
+  - Exit: exit
+    url: http://www.courts.sa.gov.au
+  - Restart: restart
+---
+# INELIGIBLE ENDPOINT
+event: endpoint['ineligible']
+question: In wrong court
+subquestion:
+  It appears you need to file your document in a different court. This application only prepares the Form 1s for the Federal Court and Federal Circuit Court. 
+
+  Choosing to exit will redirect you to the CAA of South Australia. Alternatively, you can restart and select one of the Federal Courts if you think you have made a mistake. 
+buttons:
+  - Exit: exit
+    url: http://www.courts.sa.gov.au
+  - Restart: restart
+---
